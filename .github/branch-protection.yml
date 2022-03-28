@@ -1,0 +1,53 @@
+---
+name: Branch protection Policy
+description: A policy to set branch protection rules at Repo/Branch creation
+priority: 1
+
+conditions:
+  all:
+    - fact: name
+      operator: equal
+      value: create
+      description: incoming event was a 'create'
+
+    - fact: payload.ref_type
+      operator: equal
+      value: branch
+      description: the source was a 'branch'
+
+    - fact: payload.repository.name
+      operator: regex
+      value: ^test
+      description: Repo name starts with 'test'
+
+    - fact: payload.sender.type
+      operator: notEqual
+      value: Bot
+      description: Prevent loops
+
+event:
+  type: repositoryBranchProtection
+  params:
+    rules:
+      required_status_checks:
+      enforce_admins: true
+      required_signatures: true
+      required_linear_history: true
+      allow_force_pushes: true
+      allow_deletions: true
+      required_conversation_resolution: true
+      required_pull_request_reviews:
+        dismissal_restrictions:
+          users:
+          - jefeish
+          teams:
+          - foo
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+        required_approving_review_count: 6
+      restrictions:
+        users:
+        - jefeish
+        - jester01248
+        teams:
+        - foo
